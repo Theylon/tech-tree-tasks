@@ -2,7 +2,7 @@ import { GitHubSignInButton } from '@/components/auth/github-sign-in-button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 // Version indicator - update this with each deployment
-const BUILD_VERSION = '2026-01-21 23:02 IST'
+const BUILD_VERSION = '2026-01-21 23:05 IST'
 
 export default function LoginPage({
   searchParams,

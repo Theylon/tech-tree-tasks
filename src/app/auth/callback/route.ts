@@ -19,9 +19,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/login?error=no_code`)
   }
 
-  // Create the redirect response first
+  // Create redirect response manually (NextResponse.redirect has cookie issues)
   const redirectUrl = `${origin}${next}`
-  const response = NextResponse.redirect(redirectUrl)
+  const response = new NextResponse(null, {
+    status: 302,
+    headers: {
+      Location: redirectUrl,
+    },
+  })
 
   console.log('[AUTH CALLBACK] Creating Supabase client...')
 
