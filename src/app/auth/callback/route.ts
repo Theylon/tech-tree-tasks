@@ -36,8 +36,21 @@ export async function GET(request: NextRequest) {
         setAll(cookiesToSet) {
           console.log('[AUTH CALLBACK] setAll called with', cookiesToSet.length, 'cookies')
           cookiesToSet.forEach(({ name, value, options }) => {
-            console.log('[AUTH CALLBACK] Setting cookie:', name)
-            response.cookies.set(name, value, options)
+            console.log('[AUTH CALLBACK] Setting cookie:', name, 'value length:', value?.length, 'options:', JSON.stringify(options))
+            try {
+              // Set cookie with explicit options to ensure it works
+              response.cookies.set({
+                name,
+                value,
+                ...options,
+                path: '/',
+                sameSite: 'lax',
+                secure: true,
+              })
+              console.log('[AUTH CALLBACK] Cookie set successfully:', name)
+            } catch (err) {
+              console.error('[AUTH CALLBACK] Error setting cookie:', name, err)
+            }
           })
         },
       },
