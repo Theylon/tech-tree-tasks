@@ -19,6 +19,7 @@ export function GitHubSignInButton() {
       provider: 'github',
       options: {
         redirectTo,
+        skipBrowserRedirect: false,
       },
     })
 
@@ -27,6 +28,13 @@ export function GitHubSignInButton() {
     if (error) {
       console.error('[GITHUB SIGNIN] Error:', error)
       setLoading(false)
+      return
+    }
+
+    // If we get a URL back, redirect manually
+    if (data?.url) {
+      console.log('[GITHUB SIGNIN] Redirecting to:', data.url)
+      window.location.href = data.url
     }
   }
 
