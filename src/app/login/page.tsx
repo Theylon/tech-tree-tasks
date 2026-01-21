@@ -1,6 +1,9 @@
 import { GitHubSignInButton } from '@/components/auth/github-sign-in-button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
+// Version indicator - update this with each deployment
+const BUILD_VERSION = '2026-01-21 22:57 IST'
+
 export default function LoginPage({
   searchParams,
 }: {
@@ -48,6 +51,11 @@ export default function LoginPage({
             <div className="mb-1 text-2xl">🎖️</div>
             <div>Achievements</div>
           </div>
+        </div>
+
+        {/* Version indicator */}
+        <div className="mt-8 text-center text-xs text-gray-600">
+          v{BUILD_VERSION}
         </div>
       </div>
     </div>
