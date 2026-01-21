@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import type { NextRequest } from 'next/server'
 
 export async function GET(request: NextRequest) {
@@ -7,37 +7,43 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get('code')
   const next = searchParams.get('next') ?? '/projects'
 
+  if (!code) {
+    return NextResponse.redirect(new URL('/login?error=no_code', origin))
+  }
+
   const redirectUrl = new URL(next, origin)
+  const response = NextResponse.redirect(redirectUrl)
 
-  if (code) {
-    const response = NextResponse.redirect(redirectUrl)
+  // Track cookies that need to be set
+  const cookiesToSet: { name: string; value: string; options: CookieOptions }[] = []
 
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return request.cookies.getAll()
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              response.cookies.set(name, value, options)
-            })
-          },
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
         },
-      }
-    )
-
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-
-    if (!error) {
-      return response
+        setAll(cookies) {
+          cookies.forEach((cookie) => {
+            cookiesToSet.push(cookie)
+          })
+        },
+      },
     }
+  )
 
-    console.error('Auth error:', error)
+  const { error } = await supabase.auth.exchangeCodeForSession(code)
+
+  if (error) {
     return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(error.message)}`, origin))
   }
 
-  return NextResponse.redirect(new URL('/login?error=no_code', origin))
+  // Now set all the cookies on the response
+  cookiesToSet.forEach(({ name, value, options }) => {
+    response.cookies.set(name, value, options)
+  })
+
+  return response
 }
