@@ -36,7 +36,9 @@ export function GitHubSignInButton() {
     // Redirect manually using the URL from Supabase
     if (data?.url) {
       console.log('[GITHUB SIGNIN] Manually redirecting to:', data.url)
-      window.location.assign(data.url)
+      // Use href for maximum compatibility
+      window.location.href = data.url
+      return // Stop execution after redirect
     } else {
       console.error('[GITHUB SIGNIN] No URL returned from Supabase')
       setLoading(false)
