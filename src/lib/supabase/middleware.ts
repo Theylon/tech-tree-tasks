@@ -2,6 +2,13 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function updateSession(request: NextRequest) {
+  const pathname = request.nextUrl.pathname
+  console.log('[MIDDLEWARE] Path:', pathname)
+
+  // Log cookies present
+  const allCookies = request.cookies.getAll()
+  console.log('[MIDDLEWARE] Cookies:', allCookies.map(c => c.name).join(', ') || 'none')
+
   let supabaseResponse = NextResponse.next({
     request,
   })
@@ -15,6 +22,7 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
+          console.log('[MIDDLEWARE] setAll called with', cookiesToSet.length, 'cookies')
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           )
@@ -29,27 +37,30 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  // Do not run code between createServerClient and
-  // supabase.auth.getClaims(). A simple mistake could make it very hard to debug
-  // issues with users being randomly logged out.
-
   // IMPORTANT: Use getClaims() instead of getUser() or getSession()
-  // getClaims() validates the JWT every time
-  const { data } = await supabase.auth.getClaims()
+  const { data, error } = await supabase.auth.getClaims()
+
+  if (error) {
+    console.log('[MIDDLEWARE] getClaims error:', error.message)
+  }
+
   const user = data?.claims
+  console.log('[MIDDLEWARE] User claims present:', !!user)
 
   // Protected routes
-  const isProtectedRoute = request.nextUrl.pathname.startsWith('/projects') ||
-    request.nextUrl.pathname.startsWith('/profile')
+  const isProtectedRoute = pathname.startsWith('/projects') ||
+    pathname.startsWith('/profile')
 
   if (isProtectedRoute && !user) {
+    console.log('[MIDDLEWARE] Protected route, no user - redirecting to login')
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
   // Redirect logged-in users away from login page
-  if (request.nextUrl.pathname === '/login' && user) {
+  if (pathname === '/login' && user) {
+    console.log('[MIDDLEWARE] User logged in on login page - redirecting to projects')
     const url = request.nextUrl.clone()
     url.pathname = '/projects'
     return NextResponse.redirect(url)

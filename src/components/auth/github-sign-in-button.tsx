@@ -11,15 +11,21 @@ export function GitHubSignInButton() {
     setLoading(true)
     const supabase = createClient()
 
-    const { error } = await supabase.auth.signInWithOAuth({
+    const redirectTo = `${window.location.origin}/auth/callback`
+    console.log('[GITHUB SIGNIN] Starting OAuth flow')
+    console.log('[GITHUB SIGNIN] Redirect URL:', redirectTo)
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'github',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo,
       },
     })
 
+    console.log('[GITHUB SIGNIN] Response:', { data, error })
+
     if (error) {
-      console.error('Error signing in:', error)
+      console.error('[GITHUB SIGNIN] Error:', error)
       setLoading(false)
     }
   }
