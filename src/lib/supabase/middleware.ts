@@ -38,11 +38,6 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname
 
-  // Skip auth check for callback page (it handles its own auth)
-  if (pathname.startsWith('/auth')) {
-    return response
-  }
-
   // Protected routes
   const isProtectedRoute = pathname.startsWith('/projects') ||
     pathname.startsWith('/profile')
