@@ -15,15 +15,17 @@ export function GitHubSignInButton() {
     console.log('[GITHUB SIGNIN] Starting OAuth flow')
     console.log('[GITHUB SIGNIN] Redirect URL:', redirectTo)
 
+    // Skip automatic redirect and handle it ourselves
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'github',
       options: {
         redirectTo,
-        skipBrowserRedirect: false,
+        skipBrowserRedirect: true,
       },
     })
 
-    console.log('[GITHUB SIGNIN] Response:', { data, error })
+    console.log('[GITHUB SIGNIN] Response data:', data)
+    console.log('[GITHUB SIGNIN] Response error:', error)
 
     if (error) {
       console.error('[GITHUB SIGNIN] Error:', error)
@@ -31,10 +33,13 @@ export function GitHubSignInButton() {
       return
     }
 
-    // If we get a URL back, redirect manually
+    // Redirect manually using the URL from Supabase
     if (data?.url) {
-      console.log('[GITHUB SIGNIN] Redirecting to:', data.url)
-      window.location.href = data.url
+      console.log('[GITHUB SIGNIN] Manually redirecting to:', data.url)
+      window.location.assign(data.url)
+    } else {
+      console.error('[GITHUB SIGNIN] No URL returned from Supabase')
+      setLoading(false)
     }
   }
 
